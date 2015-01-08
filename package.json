@@ -10,6 +10,7 @@
   "license": "BSD-2-Clause",
   "dependencies": {
     "express": "~4.10.7",
-    "socket.io": "~1.2.1"
+    "socket.io": "~1.2.1",
+    "md5": "~1.0.0"
   }
 }

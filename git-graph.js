@@ -1,5 +1,6 @@
 var exec = require("child_process").exec;
 var fs = require("fs");
+var md5 = require("md5");
 
 var repo = "/home/lcs/github/MyPHP";
 var repo = "/media/lcs/lcs/bitbucket/CarBar";
@@ -22,9 +23,6 @@ Date.prototype.format = function(foramt){
 	return foramt;
 }
 
-var shortDate = function(dateStr){
-	new Date(dateStr);
-}
 
 var Gitter = function(repo){
 	var $this = this;
@@ -60,7 +58,6 @@ var Gitter = function(repo){
 				line = line.split('##');
 				if( line[1] ){
 					line[1] =  JSON.parse(line[1].replace(/\s/g,' '));
-					line[1].space = line[0].indexOf("*");
 					line[1].parents = line[1].parents ? line[1].parents.split(/\s/) : [];
 					line[1].head = line[1].head.replace(/(^\s*\()|(\)\s*$)/g,'');
 					map[line[1].hash] = line[1];
@@ -68,14 +65,7 @@ var Gitter = function(repo){
 				data.push({graph:line[0],data: line[1]});
 			});
 
-			data.forEach(function(line){
-				if(!line.data)return;
-				for ( var i = 0 ; i < line.data.parents.length ; i++){
-					var parent = map[line.data.parents[i]];
-					line.data.parents[i] = [parent.hash , parent.time,parent.space];
-				}
-			});
-			cb.call($this,data);
+			cb.call($this,data,map);
 		});
 	};
 
@@ -117,17 +107,38 @@ var Gitter = function(repo){
 		var commits = []
 		this.graph(function(data){
 			var time = 0;
-			data.forEach(function(commit){
-				commit = commit.data
+			var map = {};
+			var gravatar = (function(){
+				var cache = {};
+				return function(email){
+					if( !cache[email] ){
+						cache[email] = "http://gravatar.com/avatar/#?size=48".replace("#",md5.digest_s(email));
+					}
+					return cache[email];
+				}
+			})();
+
+			data.forEach(function(logInfo){
+				var commit = logInfo.data
 				if( !commit )return;
 				commit.id = commit.hash;
 				commit.time = time++;
 				commit.author = commit.login = commit.name;
 				commit.date = new Date(commit.datetime).format("y-m-d h:M:s");
-				commit.gravatar = commit.email;
-				commit.head = commit.head.replace(/,/g,"\n");
+				commit.gravatar = gravatar(commit.email);
+				commit.head = commit.head.replace(/,/g,"<br>\n");
+				commit.space = logInfo.graph.indexOf("*");
+				
+				map[commit.hash] = commit;
 
 				commits.push(commit);
+			});
+
+			commits.forEach(function(commit){
+				for( var i = 0 , parent ; i < commit.parents.length ; i++ ){
+					parent = map[commit.parents[i]];
+					commit.parents[i] = [parent.hash,parent.time,parent.space];
+				}
 			});
 			cb.call(this,{commits:commits});
 		},true);
