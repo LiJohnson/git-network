@@ -1,4 +1,4 @@
-var $ = {};
+$=(function(){return {}}).call(this),
 function() {
     $.fetchPoll = function(e, t) {
         return new Promise(function(n, r) {

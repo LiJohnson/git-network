@@ -2,10 +2,11 @@ var app = require("express")();
 var server = require("http").Server(app);
 var io = require("socket.io")(server);
 var exec = require('child_process').exec;
+var Gitter = require("./git-graph.js");
 
-var testCommit = require("./commit.js");
+var repo = "/home/lcs/Desktop/omxplayer-web-ui"
 
-var testMeta = require("./meta.js");
+var git = new Gitter(repo);
 
 app.get("/",function(req,res){	
 	var file = __dirname + "/network.html";
@@ -27,10 +28,16 @@ app.get("/git/*",function(req,res){
 	var file = __dirname + "/";
 	if(req._parsedUrl.path.match(/meta/)){
 		file += "meta.js";
+		git.githubMeta(function(meta){
+			res.send(meta);
+		});
 	}else{
+		git.githubCommit(function(commit){
+			res.send(commit);
+		});
 		file += "commit.js";
 	}
-	res.sendFile(file);
+	//res.sendFile(file);
 });
 
 io.on("connection",function(socket){
