@@ -55,12 +55,11 @@ var Gitter = function(repo){
 			var map = {};
 			stdout = stdout.split("\n");
 			stdout = orderDesc ? stdout.reverse() : stdout;
-			var time = 0;
+
 			stdout.forEach(function(line,i){
 				line = line.split('##');
 				if( line[1] ){
 					line[1] =  JSON.parse(line[1].replace(/\s/g,' '));
-					line[1].time = time++;
 					line[1].space = line[0].indexOf("*");
 					line[1].parents = line[1].parents ? line[1].parents.split(/\s/) : [];
 					line[1].head = line[1].head.replace(/(^\s*\()|(\)\s*$)/g,'');
@@ -117,13 +116,16 @@ var Gitter = function(repo){
 	this.githubCommit = function(cb){
 		var commits = []
 		this.graph(function(data){
+			var time = 0;
 			data.forEach(function(commit){
 				commit = commit.data
 				if( !commit )return;
 				commit.id = commit.hash;
+				commit.time = time++;
 				commit.author = commit.login = commit.name;
 				commit.date = new Date(commit.datetime).format("y-m-d h:M:s");
 				commit.gravatar = commit.email;
+				commit.head = commit.head.replace(/,/g,"\n");
 
 				commits.push(commit);
 			});
