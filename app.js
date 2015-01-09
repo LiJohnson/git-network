@@ -5,6 +5,7 @@ var exec = require('child_process').exec;
 var Gitter = require("./git-graph.js");
 
 var repo = "/home/lcs/Desktop/omxplayer-web-ui"
+var repo = "/media/lcs/lcs/bitbucket/CarBar"
 
 var git = new Gitter(repo);
 
