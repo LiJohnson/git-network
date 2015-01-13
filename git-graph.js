@@ -128,7 +128,7 @@ var Gitter = function(repo){
 				commit.date = new Date(commit.datetime).format("y-m-d h:M:s");
 				commit.gravatar = gravatar(commit.email);
 				commit.head = commit.head.replace(/,/g,"<br>\n");
-				commit.space = logInfo.graph.indexOf("*");
+				commit.space = logInfo.graph.indexOf("*")/2;
 				
 				map[commit.hash] = commit;
 
@@ -192,11 +192,12 @@ var Gitter = function(repo){
 	};
 };
 
-//module.exports = Gitter;
+module.exports = Gitter;
+/*
 var g = new Gitter(repo);
 g.highcharts(function(data){
 	console.log(data);
 	//JSON.stringify(data);
 	//fs.writeFile("/tmp/git.json",JSON.stringify(data));
 });
-
+*/
