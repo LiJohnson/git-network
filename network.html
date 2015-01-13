@@ -9,25 +9,86 @@
 			.repo-path{
 				width:100%;
 			}
-			.repo-path input{
+			.repo-path input , .container{
 				display:block;
 				width:920px;
+				margin:0px auto;
+			}
+
+			.repo-path input{
 				font-size: 20px;
 				border:1px solid rgb(102, 175, 233);
 				border-radius: 5px;
-				margin: 3px auto;
-				padding: 3px;
+				padding: 5px;
 			}
+
 			.repo-path input:focus{
 				border-color: #66afe9;
 				outline: 0;
 			}
+			.container{
+				position: relative;
+				height:1px;
+				overflow: visible;
+				padding: 5px;
+
+			}
+			.list{
+				position:absolute;
+				left:0;
+				top:0;
+				width:100%;
+				//height:500px;
+				background:#fff;
+				border:1px solid #eee;
+				font-size: 20px;
+	
+				border-bottom-right-radius: 3px;
+				border-bottom-left-radius: 3px;
+			}
+			.list ul{
+				list-style: none;
+				margin:0px;
+				padding:0px;
+			}
+			.list li {
+				border-bottom: 1px solid #eee;
+			    padding:5px 10px;
+			    cursor: pointer;
+			}
+
+			.list li:last-child {
+			    border-bottom: none;
+			    border-bottom-right-radius: 3px;
+				border-bottom-left-radius: 3px;
+			}
+			.list li.activity , .list li:hover{
+				background: rgb(102, 175, 233);
+				color: #fff;
+			}
+			.list li i{
+				background: rgb(182, 180, 255);
+				color: #fff;
+				margin-left: 10px;
+				display: inline-block;
+				padding: 1px;
+				font-size: 15px;
+				border-radius: 50%;
+			}
+			.list li i:before{
+				content: 'git';
+			}
 		</style>
-		<link rel="stylesheet" href="//ichord.github.io/At.js/dist/css/jquery.atwho.css" />
 	</head>
 	<body>
 		<div class="repo-path" >
 			<input type="text" />
+			<div class="container" >
+				<div class=list >
+					<ul>
+					</ul>
+				</div>
+			</div>
 		</div>
 		<div id="network">
 			<div class="network-graph-container js-network-graph-container" 
@@ -40,10 +101,79 @@
 		<script src="frameworks.js" ></script>
 		<script src="github.js" ></script>
 		<script src="/socket.io/socket.io.js"></script>
-  		<script src="//ichord.github.io/Caret.js/src/jquery.caret.js"></script>
-  		<script src="//ichord.github.io/At.js/dist/js/jquery.atwho.js"></script>
 		<script>
+			var KEYS = {left:37,up:38,right:39,down:40,enter:13};
 			var socket = io();
+			var $input = $(".repo-path input");
+			var $list = $(".list ul");
+			var cur = 0;
+			var reload = (function(){
+				var $network = $("#network");
+				return function(){
+					$network.html($network.find(">div").clone());
+				}
+			})();
+			var print = function(list){
+				$list.empty();
+				list && $.each(list,function(i,data){
+					$list.append($("<li></li>").html(data.path).data(data).append(data.isGit? "<i></i>" : "" ));
+				});
+			};
+
+			var selectLi = function($li){
+				if( $li.length == 0 )return;
+				$input.val($li.data("path")+"/");
+				if( $li.data("isGit") ){
+					socket.emit("git",{repo:$li.data("path")});
+					$list.empty();
+					reload();
+					return false;
+				}else{
+					$input.trigger("keyup");
+				}
+			};
+
+			$input.keyup((function(){
+				var cache = [];
+				socket.on("path",function(data){
+					console.log(data);
+					cache[data.path] = data.data;
+					print(cache[data.path]);
+				});
+				var lastVal ;
+				return function(){
+					var val = $input.val();
+					if( val == lastVal ){
+						return;
+					}
+					lastVal = val;
+
+					var path = val.replace(/\/+\w*$/,'/');
+					if( cache[path] ){
+						print(cache[path].filter(function(info){ return info.path.indexOf(val) != -1 }));
+					}else{
+						socket.emit("path",{path:path});
+					}
+				}
+			})()).keydown(function(e){
+				if( e.keyCode == KEYS.up || e.keyCode == KEYS.down ){
+					var len = $list.find("li").length;
+					if( len == 0 )return;
+					cur = cur + ( e.keyCode == KEYS.up ? -1 : 1 );
+					cur = (cur+len)%len;
+					$list.find("li").removeClass("activity").eq(cur).addClass("activity");
+					return false;
+				}else if( e.keyCode == KEYS.enter ){
+					selectLi($list.find(".activity"));
+				}
+			}).blur(function() {
+				$list.empty();
+			});;
+
+			$list.on("click","li",function(){
+				selectLi($(this));
+			})
+			
 		</script>
 	</body>
 </html>

@@ -9,6 +9,15 @@ var repo = "/media/lcs/lcs/bitbucket/CarBar"
 
 var git = new Gitter(repo);
 
+var repoPath = require("./repo-path");
+
+app.get("/test",function(req,res){
+	r(".",function(data){ 
+		console.log(data) 
+		res.send(data);
+	});
+});
+
 app.get("/",function(req,res){	
 	var file = __dirname + "/network.html";
 	res.sendFile(file);
@@ -31,7 +40,6 @@ app.get("/:file",function(req,res){
 
 app.get("/static/*",function(req,res){
 	var file = __dirname + "/lib" + req._parsedUrl.pathname.replace(/^\/?static/,'');
-	//console.log(file);
 	res.sendFile(file);
 });
 
@@ -49,8 +57,16 @@ app.get("/git/*",function(req,res){
 });
 
 io.on("connection",function(socket){
-	socket.on("path",function(action){
-		socket.emit("path",[]);
+	socket.on("path",function(data){
+		try{
+			repoPath(data.path,function(results){
+				socket.emit("path",{path:data.path,data:results});
+			});
+		}catch(e){
+			socket.emit("path-errr",e);
+		}
+	}).on("git",function(data){
+		git = new Gitter(data.repo);
 	});
 });
 
