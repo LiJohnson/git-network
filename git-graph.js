@@ -182,12 +182,15 @@ var Gitter = function(repo){
 	this.highcharts = function(cb){
 		this.commits(function(commits){
 			var lines = [];
+			var  points = [];
 			commits.forEach(function(commit){
 				commit.parents.forEach(function(parent){
 					lines.push([[commit.x,commit.y],[parent.x,parent.y]]);
 				});
+				points.push([commit.datetime*1,commit.y]);
+				delete commit.parents;
 			});
-			cb.call(this,lines);
+			cb.call(this,{lines:lines,commits:commits,points:points});
 		});
 	};
 };

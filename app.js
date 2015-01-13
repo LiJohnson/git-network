@@ -14,6 +14,16 @@ app.get("/",function(req,res){
 	res.sendFile(file);
 });
 
+app.get("/highcharts",function(req,res){
+	res.sendFile(__dirname + "/highcharts.html" );
+});
+
+app.get("/highcharts/commits",function(req,res){
+	git.highcharts(function(data){
+		res.send(data);
+	});
+});
+
 app.get("/:file",function(req,res){	
 	var file = __dirname + "/" + req.params.file;
 	res.sendFile(file);
@@ -28,7 +38,6 @@ app.get("/static/*",function(req,res){
 app.get("/git/*",function(req,res){
 	var file = __dirname + "/";
 	if(req._parsedUrl.path.match(/meta/)){
-		file += "meta.js";
 		git.githubMeta(function(meta){
 			res.send(meta);
 		});
@@ -36,9 +45,7 @@ app.get("/git/*",function(req,res){
 		git.githubCommit(function(commit){
 			res.send(commit);
 		});
-		file += "commit.js";
 	}
-	//res.sendFile(file);
 });
 
 io.on("connection",function(socket){

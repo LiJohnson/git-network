@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>highcharts</title>
+	<script src="/static/js/highstock/standalone-framework.js"></script>
+	<script src="/static/js/highstock/highstock.js" ></script>
+	<style>
+		#highcharts{
+			position: fixed;
+			left: 10px;
+			top: 10px;
+			right: 10px;
+			bottom: 10px;
+		}
+	</style>
+</head>
+<body>
+	<div id="highcharts">
+	</div>
+	<script>
+		var load = function(cb){
+			var xhr = new XMLHttpRequest();
+			xhr.open("GET","/highcharts/commits");
+			xhr.onload = function(){
+				cb.call(xhr,JSON.parse(xhr.response))
+			};
+			xhr.send(null);
+		};
+
+		var getSeriesData = function(commits){
+			var series = [];
+			var getColor = (function(){
+				var color = ["#2f7ed8","#8bbc21","#1aadce","#492970","#0d233a","#f28f43","#1aadce"];
+				var i = 0;
+				return function(){
+					i = (i+1)%color.length;
+					return color[i];
+				}
+			})();
+
+			commits.forEach(function(commit){
+				commit.date = new Date(commit.datetime)*1;
+			});
+
+			commits.sort(function(a,b){return b.date - a.date});
+
+			var map = (function(){
+				var map = {};
+				commits.forEach(function(commit){
+					map[commit.hash] = commit;
+				});
+				return map;
+			})();
+
+			var move = function(commit , data){
+				data.push([commit.date,commit.y]);
+				
+				if( commit.isMove || commit.parentsHash.length == 0 ){
+					return series.push({data:data,color:getColor()});
+				}
+
+				commit.isMove = true;
+
+				commit.parentsHash.forEach(function(hash,i){
+					if( i > 0 ){
+						data = [[commit.date,commit.y]];
+					}
+					move(map[hash],data);
+				});
+			};
+
+			commits.forEach(function(commit){
+				move(commit,[]);
+			});
+
+			console.log(series);
+			return series;
+		};
+
+		load(function(data){
+			var series = [] && getSeriesData(data.commits);
+			series.push({
+					name : 'commit',
+					data : data.points,
+					lineWidth : 0,	
+					marker : {
+	                    enabled : true,
+	                    radius : 2
+	                },
+				});
+			var getCommit = (function(){
+				var map = {};
+				data.commits.forEach(function(commit){
+					map[commit.date+"_" + commit.y] = commit;
+				});
+				return function(x,y){
+					return map[ x + "_" + y ];
+				}
+			})();
+			var chart = new Highcharts.StockChart({
+				chart: {
+					renderTo: 'highcharts'
+				},
+				tooltip: {
+					formatter: function(e) {
+						var c = getCommit(this.x,this.y);
+
+						var html = '<b>' + c.datetime + '</b>';
+						html += '<br>' + c.name;
+						html += '<br/>' + c.message;
+						html += '<br> <img src="' + c.gravatar + '" >';
+						return html;
+					}
+			 	},
+				series : series
+		});
+		});
+			
+	</script>
+</body>
+</html>
