@@ -37,13 +37,11 @@ app.get("/git/*",function(req,res){
 		});
 		file += "commit.js";
 	}
-	//res.sendFile(file);
 });
 
 io.on("connection",function(socket){
-	socket.emit("control",control);
-	socket.on("control",function(action){
-		handleControl(action);
+	socket.on("path",function(action){
+		socket.emit("path",[]);
 	});
 });
 
