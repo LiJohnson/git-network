@@ -37,6 +37,16 @@ var Gitter = function(repo){
 			}
 		});
 	};
+
+	var gravatar = (function(){
+		var cache = {};
+		return function(email){
+			if( !cache[email] ){
+				cache[email] = "http://gravatar.com/avatar/#?size=48".replace("#",md5.digest_s(email));
+			}
+			return cache[email];
+		}
+	})();
 	
 	this.repoName = repo.split('/').pop();
 
@@ -107,16 +117,7 @@ var Gitter = function(repo){
 		var commits = []
 		this.graph(function(data){
 			var time = 0;
-			var map = {};
-			var gravatar = (function(){
-				var cache = {};
-				return function(email){
-					if( !cache[email] ){
-						cache[email] = "http://gravatar.com/avatar/#?size=48".replace("#",md5.digest_s(email));
-					}
-					return cache[email];
-				}
-			})();
+			var map = {};	
 
 			data.forEach(function(logInfo){
 				var commit = logInfo.data
@@ -127,7 +128,7 @@ var Gitter = function(repo){
 				commit.date = new Date(commit.datetime).format("y-m-d h:M:s");
 				commit.gravatar = gravatar(commit.email);
 				commit.head = commit.head.replace(/,/g,"<br>\n");
-				commit.space = logInfo.graph.indexOf("*");
+				commit.space = logInfo.graph.indexOf("*")/2;
 				
 				map[commit.hash] = commit;
 
@@ -144,11 +145,62 @@ var Gitter = function(repo){
 		},true);
 	};
 
+	this.commits = function(cb){
+		this.graph(function(data){
+			var x = 0;
+			var commits = [];
+			var map = {};
+
+			data.forEach(function(logInfo){
+				var commit = logInfo.data
+				if( !commit )return;
+				commit.x = x++;
+				commit.y = logInfo.graph.indexOf("*");
+				commit.datetime = new Date(commit.datetime);
+				commit.gravatar = gravatar(commit.email);
+				commit.heads = !commit.head ? [] :commit.head.split(',');
+
+				commit.parentsHash = commit.parents;
+				commit.children = [];
+				commit.parents = [];
+
+				commits.push(commit);
+				map[commit.hash] = commit;
+			});
+
+			commits.forEach(function(commit){
+				for( var i = 0 , parent ; i < commit.parentsHash.length ; i++ ){
+					parent = map[commit.parentsHash[i]];
+					commit.parents.push(parent);
+					//parent.children.push(commit);
+				}
+			});
+			cb.call(this,commits);
+		},true);
+	};
+	
+	this.highcharts = function(cb){
+		this.commits(function(commits){
+			var lines = [];
+			var  points = [];
+			commits.forEach(function(commit){
+				commit.parents.forEach(function(parent){
+					lines.push([[commit.x,commit.y],[parent.x,parent.y]]);
+				});
+				points.push([commit.datetime*1,commit.y]);
+				delete commit.parents;
+			});
+			cb.call(this,{lines:lines,commits:commits,points:points});
+		});
+	};
 };
 
 module.exports = Gitter;
-/*var g = new Gitter(repo);
-g.githubCommit(function(data){
+/*
+var g = new Gitter(repo);
+g.highcharts(function(data){
 	console.log(data);
+	//JSON.stringify(data);
+	//fs.writeFile("/tmp/git.json",JSON.stringify(data));
 });
 */

@@ -5,12 +5,23 @@ var exec = require('child_process').exec;
 var Gitter = require("./git-graph.js");
 
 var repo = "/home/lcs/Desktop/omxplayer-web-ui"
+var repo = "/media/lcs/lcs/bitbucket/CarBar"
 
 var git = new Gitter(repo);
 
 app.get("/",function(req,res){	
 	var file = __dirname + "/network.html";
 	res.sendFile(file);
+});
+
+app.get("/highcharts",function(req,res){
+	res.sendFile(__dirname + "/highcharts.html" );
+});
+
+app.get("/highcharts/commits",function(req,res){
+	git.highcharts(function(data){
+		res.send(data);
+	});
 });
 
 app.get("/:file",function(req,res){	
@@ -27,7 +38,6 @@ app.get("/static/*",function(req,res){
 app.get("/git/*",function(req,res){
 	var file = __dirname + "/";
 	if(req._parsedUrl.path.match(/meta/)){
-		file += "meta.js";
 		git.githubMeta(function(meta){
 			res.send(meta);
 		});
@@ -35,7 +45,6 @@ app.get("/git/*",function(req,res){
 		git.githubCommit(function(commit){
 			res.send(commit);
 		});
-		file += "commit.js";
 	}
 });
 
