@@ -99,16 +99,23 @@ var Gitter = function(repo){
 		};
 
 		this.graph(function(data){
+			var maxSpace = 0 , space;
 			data.forEach(function(commit){
 				if( !commit.data )return;
+				space = commit.graph.indexOf("*");
+				maxSpace = Math.max(maxSpace,space);
+
 				meta.dates.push(new Date(commit.data.datetime).format())
 
 				if(!commit.data.head)return;
 				meta.users[0].heads.push({name:commit.data.head,id:commit.data.hash})
-				meta.spacemap.push([]);
 			});
 			meta.blocks[0].count = meta.spacemap.length;
 			meta.focus = meta.dates.length;
+			while(maxSpace > 0 ){
+				meta.spacemap.push([]);
+				maxSpace--;
+			}
 			cb.call(this,meta);
 		},true);
 	};
