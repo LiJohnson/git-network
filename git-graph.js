@@ -54,7 +54,7 @@ var Gitter = function(repo){
 		if(!cb) throw "need a callback function";
 
 		var cmd = "log --all --branches --date-order --graph --pretty=format:'" ;
-		cmd += '##{"hash":"%h" , "parents":"%p" , "head":"%d", "name":"%an" , "email": "%ae" , "message" : "%s" ,"datetime" :"%ad"}'
+		cmd += '##{"hash":"%h" , "parents":"%p" , "head":"%d", "name":"%an" , "email": "%ae"  ,"datetime" :"%ad" } #message# %s'
 		cmd += "'";
 
 		return git(cmd,function(stdout){
@@ -67,7 +67,11 @@ var Gitter = function(repo){
 			stdout.forEach(function(line,i){
 				line = line.split('##');
 				if( line[1] ){
-					line[1] =  JSON.parse(line[1].replace(/\s/g,' '));
+					var tmp = line[1].split("#message#");
+				
+					line[1] =  JSON.parse(tmp[0]);
+					line[1].message = tmp[1];
+					
 					line[1].parents = line[1].parents ? line[1].parents.split(/\s/) : [];
 					line[1].head = line[1].head.replace(/(^\s*\()|(\)\s*$)/g,'');
 					map[line[1].hash] = line[1];
@@ -99,7 +103,7 @@ var Gitter = function(repo){
 		};
 
 		this.graph(function(data){
-			var maxSpace = 0 , space;
+			var maxSpace = 1 , space;
 			data.forEach(function(commit){
 				if( !commit.data )return;
 				space = commit.graph.indexOf("*");
@@ -110,12 +114,15 @@ var Gitter = function(repo){
 				if(!commit.data.head)return;
 				meta.users[0].heads.push({name:commit.data.head,id:commit.data.hash})
 			});
-			meta.blocks[0].count = meta.spacemap.length;
-			meta.focus = meta.dates.length;
+			
 			while(maxSpace > 0 ){
 				meta.spacemap.push([]);
 				maxSpace--;
 			}
+
+			meta.blocks[0].count = meta.spacemap.length;
+			meta.focus = meta.dates.length;
+			
 			cb.call(this,meta);
 		},true);
 	};
