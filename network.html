@@ -154,14 +154,15 @@
 					}else{
 						socket.emit("path",{path:path});
 					}
+					cur = 0;
 				}
 			})()).keydown(function(e){
 				if( e.keyCode == KEYS.up || e.keyCode == KEYS.down ){
 					var len = $list.find("li").length;
 					if( len == 0 )return;
-					cur = cur + ( e.keyCode == KEYS.up ? -1 : 1 );
 					cur = (cur+len)%len;
 					$list.find("li").removeClass("activity").eq(cur).addClass("activity");
+					cur = cur + ( e.keyCode == KEYS.up ? -1 : 1 );
 					return false;
 				}else if( e.keyCode == KEYS.enter ){
 					selectLi($list.find(".activity"));
