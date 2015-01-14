@@ -1,4 +1,5 @@
 var exec = require("child_process").exec;
+var spawn = require("child_process").spawn;
 var fs = require("fs");
 var md5 = require("md5");
 
@@ -26,16 +27,29 @@ Date.prototype.format = function(foramt){
 
 var Gitter = function(repo){
 	var $this = this;
-	var git = function(cmd , cb , err){
-		console.log("cmd git " + cmd);
-		return exec( "git " + cmd ,{cwd:repo} , function(err,stdout,stderr){
-			if( err || stderr ){
-				console.log(err,stderr);
-				err && err.call($this,err,stderr);
-			}else{
-				cb.call($this,stdout);
-			}
+	var run = function(cmd,params,cb,errcb){
+		var buf = new Buffer("");
+		var process = spawn(cmd,params,{cwd:repo});
+		process.stdout.on("data",function(data){
+			buf = Buffer.concat([buf,data]);
 		});
+
+		process.stderr.on("data",function(data){
+			buf = Buffer.concat([buf,data]);
+		});
+
+		process.on("close",function(code){
+			cb = code == 0 ? cb : errcb||function(){};
+			cb.call($this,buf.toString(),buf);
+		});
+		
+		return process;
+	};
+
+	var git = function(cmd , cb , errcb){
+		cmd = Array.isArray(cmd) ? cmd : cmd.trim().split(" ");
+		console.log("cmd git " , cmd);
+		return run("git",cmd,cb,errcb);
 	};
 
 	var gravatar = (function(){
@@ -57,9 +71,10 @@ var Gitter = function(repo){
 	this.graph = function(cb,orderDesc){
 		if(!cb) throw "need a callback function";
 
-		var cmd = "log --all --branches --date-order --graph --pretty=format:'" ;
-		cmd += '##{"hash":"%h" , "parents":"%p" , "head":"%d", "name":"%an" , "email": "%ae"  ,"datetime" :"%ad" } #message# %s'
-		cmd += "'";
+		var cmd = "log --all --branches --date-order --graph".split(" ");
+		cmd.push("--pretty=format:'"  
+				+'##{"hash":"%h" , "parents":"%p" , "head":"%d", "name":"%an" , "email": "%ae"  ,"datetime" :"%ad" } #message# %s'
+				+"'");
 
 		return git(cmd,function(stdout){
 			//fs.writeFile("/tmp/git.log",stdout);
@@ -84,7 +99,7 @@ var Gitter = function(repo){
 			});
 
 			cb.call($this,data,map);
-		});
+		},cb);
 	};
 
 	this.githubMeta = function(cb){
@@ -210,6 +225,14 @@ var Gitter = function(repo){
 			});
 			cb.call(this,{lines:lines,commits:commits,points:points});
 		});
+	};
+
+	this.logDetial = function(hash , cb){
+		git(" log -n 1 -p --color " + hash , function(str,buf){
+			var p = run("ansi2html",[],cb,cb);
+			p.stdin.write(buf);
+			p.stdin.end();
+		},cb);
 	};
 };
 

@@ -56,6 +56,12 @@ app.get("/git/*",function(req,res){
 	}
 });
 
+app.get("/:repo/:name/:commit/:hash",function(req,res){
+	git.logDetial( req.params.hash , function(data){
+		res.send(data);
+	} )
+});
+
 io.on("connection",function(socket){
 	socket.on("path",function(data){
 		try{
