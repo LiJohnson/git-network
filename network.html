@@ -167,7 +167,7 @@
 					selectLi($list.find(".activity"));
 				}
 			}).blur(function() {
-				$list.empty();
+				setTimeout(function(){$list.empty();},300);
 			});;
 
 			$list.on("click","li",function(){
