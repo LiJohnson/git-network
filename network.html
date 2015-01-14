@@ -172,7 +172,12 @@
 
 			$list.on("click","li",function(){
 				selectLi($(this));
-			})
+			});
+
+			socket.emit("repo");
+			socket.on("repo",function(data){
+				$input.val(data.repo);
+			});
 			
 		</script>
 	</body>

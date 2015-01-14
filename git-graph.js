@@ -50,6 +50,10 @@ var Gitter = function(repo){
 	
 	this.repoName = repo.split('/').pop();
 
+	this.getRepo = function(){
+		return repo;
+	}
+
 	this.graph = function(cb,orderDesc){
 		if(!cb) throw "need a callback function";
 

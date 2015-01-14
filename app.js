@@ -67,6 +67,8 @@ io.on("connection",function(socket){
 		}
 	}).on("git",function(data){
 		git = new Gitter(data.repo);
+	}).on("repo",function(){
+		socket.emit("repo",{repo:git.getRepo()});
 	});
 });
 
