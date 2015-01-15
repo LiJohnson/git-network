@@ -109,8 +109,9 @@
 			var cur = 0;
 			var reload = (function(){
 				var $network = $("#network");
+				var $container = $network.find(".js-network-graph-container").remove();
 				return function(){
-					$network.html($network.find(">div").clone());
+					$network.html($container.clone());
 				}
 			})();
 			var print = function(list){
@@ -178,6 +179,7 @@
 			socket.emit("repo");
 			socket.on("repo",function(data){
 				$input.val(data.repo);
+				reload();
 			});
 			
 		</script>
