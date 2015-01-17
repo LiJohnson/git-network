@@ -17,14 +17,17 @@
 
 			.repo-path input{
 				font-size: 20px;
-				border:1px solid rgb(102, 175, 233);
+				border:1px solid #fff;
 				border-radius: 5px;
 				padding: 5px;
 			}
 
 			.repo-path input:focus{
-				border-color: #66afe9;
+				border-color: #fff;
 				outline: 0;
+				-webkit-box-shadow:rgb(0, 0, 0) 0px 0px 41px -7px;
+				-moz-box-shadow:rgb(0, 0, 0) 0px 0px 41px -7px;
+				box-shadow:rgb(0, 0, 0) 0px 0px 41px -7px;
 			}
 			.container{
 				position: relative;
@@ -78,11 +81,15 @@
 			.list li i:before{
 				content: 'git';
 			}
+			canvas,input{
+				-webkit-box-shadow: rgb(0, 0, 0) 0px 0px 26px -7px;
+				box-shadow: rgb(0, 0, 0) 0px 0px 26px -7px;
+			}
 		</style>
 	</head>
 	<body>
 		<div class="repo-path" >
-			<input type="text" />
+			<input type="text" placeholder="git repository" />
 			<div class="container" >
 				<div class=list >
 					<ul>
