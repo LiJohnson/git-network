@@ -42,6 +42,10 @@ var Gitter = function(repo){
 			cb = code == 0 ? cb : errcb||function(){};
 			cb.call($this,buf.toString(),buf);
 		});
+
+		process.on("error",function(code){
+			console.log(arguments);
+		});
 		
 		return process;
 	};
