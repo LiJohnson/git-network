@@ -40,11 +40,12 @@ var Gitter = function(repo){
 
 		process.on("close",function(code){
 			cb = code == 0 ? cb : errcb||function(){};
+			console.log("code " , code);
 			cb.call($this,buf.toString(),buf);
 		});
 
-		process.on("error",function(code){
-			console.log(arguments);
+		process.on("error",function(error){
+			console.log(error);
 		});
 		
 		return process;
@@ -103,7 +104,9 @@ var Gitter = function(repo){
 			});
 
 			cb.call($this,data,map);
-		},cb);
+		},function(error){
+			console.log(error);
+		});
 	};
 
 	this.githubMeta = function(cb){
@@ -233,10 +236,16 @@ var Gitter = function(repo){
 
 	this.logDetial = function(hash , cb){
 		git(" log -n 1 -p --color " + hash , function(str,buf){
-			var p = run("ansi2html",[],cb,cb);
-			p.stdin.write(buf);
-			p.stdin.end();
-		},cb);
+			try{
+				var p = run("ansi2html",[],cb,function(){});
+				p.stdin.write(buf);
+				p.stdin.end();
+			}catch(e){
+				cb.call($this,"<pre>"+buf.toString());
+			}
+		},function(error){
+			console.log(error)
+		});
 	};
 };
 
