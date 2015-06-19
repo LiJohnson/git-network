@@ -131,6 +131,9 @@
 			var selectLi = function($li){
 				if( $li.length == 0 )return;
 				$input.val($li.data("path")+"/");
+
+				localStorage.path = $input.val();
+
 				if( $li.data("isGit") ){
 					socket.emit("git",{repo:$li.data("path")});
 					$list.empty();
@@ -183,12 +186,10 @@
 				selectLi($(this));
 			});
 
-			socket.emit("repo");
-			socket.on("repo",function(data){
-				$input.val(data.repo);
-				reload();
-			});
-			
+			$input.val(localStorage.path);
+			socket.emit("git",{repo:$input.val()});
+			reload();
+
 		</script>
 	</body>
 </html>
