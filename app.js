@@ -56,9 +56,9 @@ app.get("/git/*",function(req,res){
 });
 
 app.get("/:repo/:name/:commit/:hash",function(req,res){
-	git.deploy( req.params.hash , function(data){
+	git.deploy( "./shell/deploy.sh" , req.params.hash , function(data){
 		res.send(data);
-	})
+	});
 });
 
 io.on("connection",function(socket){

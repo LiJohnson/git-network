@@ -233,7 +233,7 @@ var Gitter = function(repo){
 	this.logDetial = function(hash , cb){
 		git(" log -n 1 -p --color " + hash , function(str,buf){
 			try{
-				var p = run("ansi2html",[],cb,function(){});
+				var p = run("ansi2html",[],cb,cb);
 				p.stdin.write(buf);
 				p.stdin.end();
 			}catch(e){
@@ -245,7 +245,15 @@ var Gitter = function(repo){
 	};
 
 	this.deploy = function( script , hash , cb){
-		run("./shell/deploy.sh" ,[hash],cb,function(){});
+		run("bash" ,[ script ,hash],function(str,buf){
+			try{
+				var p = run("ansi2html",[],cb,cb);
+				p.stdin.write(buf);
+				p.stdin.end();
+			}catch(e){
+				cb.call($this,"<pre>"+buf.toString());
+			}
+		},cb);
 	};
 };
 
