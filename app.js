@@ -4,8 +4,7 @@ var io = require("socket.io")(server);
 var exec = require('child_process').exec;
 var Gitter = require("./git-graph.js");
 
-var repo = "/home/lcs/Desktop/omxplayer-web-ui"
-var repo = "/media/lcs/lcs/bitbucket/CarBar"
+var repo = '/tmp';
 
 var git = new Gitter(repo);
 
@@ -57,9 +56,9 @@ app.get("/git/*",function(req,res){
 });
 
 app.get("/:repo/:name/:commit/:hash",function(req,res){
-	git.logDetial( req.params.hash , function(data){
+	git.deploy( req.params.hash , function(data){
 		res.send(data);
-	} )
+	})
 });
 
 io.on("connection",function(socket){

@@ -3,10 +3,6 @@ var spawn = require("child_process").spawn;
 var fs = require("fs");
 var md5 = require("md5");
 
-var repo = "/home/lcs/github/MyPHP";
-var repo = "/media/lcs/lcs/bitbucket/CarBar";
-var repo = "/home/lcs/github/omxplayer-web-ui"
-
 Date.prototype.format = function(foramt){
 	foramt = foramt || "y-m-d";
 
@@ -246,6 +242,10 @@ var Gitter = function(repo){
 		},function(error){
 			console.log(error)
 		});
+	};
+
+	this.deploy = function( script , hash , cb){
+		run("./shell/deploy.sh" ,[hash],cb,function(){});
 	};
 };
 
