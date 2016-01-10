@@ -56,9 +56,10 @@ app.get("/git/*",function(req,res){
 });
 
 app.get("/:repo/:name/:commit/:hash",function(req,res){
-	git.deploy( "./shell/deploy.sh" , req.params.hash , function(data){
-		res.send(data);
-	});
+	// git.deploy( "./shell/deploy.sh" , req.params.hash , function(data){
+	// 	res.send(data);
+	// });
+	res.sendFile(__dirname + "/deploy.html");
 });
 
 io.on("connection",function(socket){
@@ -74,6 +75,13 @@ io.on("connection",function(socket){
 		git = new Gitter(data.repo);
 	}).on("repo",function(){
 		socket.emit("repo",{repo:git.getRepo()});
+	}).on("deploy",function(data){
+		git.deploy("./shell/deploy.sh",data.hash,function(data){
+			console.log(data);
+		}).stdout.on("data",function(data){
+			socket.emit("console",data);
+			
+		});
 	});
 });
 

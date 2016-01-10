@@ -1,0 +1,24 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>deploy</title>
+
+</head>
+<body>
+    <pre id="console" ></pre>
+	<script src="/frameworks.js" ></script>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    	var $body = $("body")
+        var socket = io();
+        socket.emit('deploy',{hash:location.href.split('/').pop()});
+        socket.on('console',function(html){
+        	html = String.fromCharCode.apply(null, new Uint8Array(html));
+        	console.log(html);
+        	$body.scrollTop($body.outerHeight());
+        	$("#console").append(html);
+        });
+    </script>
+</body>
+</html>

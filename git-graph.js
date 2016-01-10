@@ -243,9 +243,30 @@ var Gitter = function(repo){
 			console.log(error)
 		});
 	};
+    
+    /**
+     * 只列出远端分支
+     */
+	this.branch = function( cb ){
+		git( "branch -r" , function(str){
+            var arr = [];
+            str.split(/\n/g).forEach(function(line){
+                line = line.trim();
+                if( !line )return;
+                if( /HEAD/.test(line))return;
+                arr.push(line.split("/").pop());
+            });
+			cb(arr);
+		} , function(error){ 
+			cb(error);
+			console.log(error);
+		});
+        
+        return this;
+	};
 
 	this.deploy = function( script , hash , cb){
-		run("bash" ,[ script ,hash],function(str,buf){
+		return run("bash" ,[ script ,hash],function(str,buf){
 			try{
 				var p = run("ansi2html",[],cb,cb);
 				p.stdin.write(buf);
