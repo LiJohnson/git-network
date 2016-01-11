@@ -56,9 +56,6 @@ app.get("/git/*",function(req,res){
 });
 
 app.get("/:repo/:name/:commit/:hash",function(req,res){
-	// git.deploy( "./shell/deploy.sh" , req.params.hash , function(data){
-	// 	res.send(data);
-	// });
 	res.sendFile(__dirname + "/deploy.html");
 });
 
@@ -76,13 +73,25 @@ io.on("connection",function(socket){
 	}).on("repo",function(){
 		socket.emit("repo",{repo:git.getRepo()});
 	}).on("deploy",function(data){
-		git.deploy("./shell/deploy.sh",data.hash,function(data){
+        if( data.repo ){
+            git = new Gitter(data.repo);
+        }
+        if( !data.hash )return;
+		var pro = git.deploy("./shell/deploy.sh",data.hash,function(data){
 			console.log(data);
-		}).stdout.on("data",function(data){
-			socket.emit("console",data);
-			
 		});
-	});
+        pro.stdout.on("data",function(data){
+			socket.emit("console",data);
+		});
+        pro.stderr.on("data",function(data){
+			socket.emit("console",data);
+		});
+	}).on('change-repo',function(repo){
+        git = new Gitter(repo);
+        git.branch( function(arr){
+            socket.emit('change-repo',arr);
+        });
+    });
 });
 
 

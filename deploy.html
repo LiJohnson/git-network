@@ -2,23 +2,54 @@
 <head>
     <meta charset="UTF-8" />
     <title>deploy</title>
+    <link href="//cdn.bootcss.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" rel="stylesheet">
+
 
 </head>
 <body>
+    <div class="row" >
+        <select class="btn btn-default repo" ></select>
+        <select class="btn btn-info bra" ></select>
+        <a class="btn btn-info deploy" >deploy</a>
+    </div>
     <pre id="console" ></pre>
 	<script src="/frameworks.js" ></script>
-
+    <script src="//cdn.bootcss.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
     	var $body = $("body")
         var socket = io();
-        socket.emit('deploy',{hash:location.href.split('/').pop()});
         socket.on('console',function(html){
         	html = String.fromCharCode.apply(null, new Uint8Array(html));
         	console.log(html);
         	$body.scrollTop($body.outerHeight());
-        	$("#console").append(html);
+        	$('#console').append(html);
+        }).on('change-repo',function(branches){
+             $('select.bra').empty();
+            $.each(branches,function(i,b){
+                 $('select.bra').append($('<option />').val(b).html(b));
+                 
+            });
+        }).on('repo',function(data){
+            $('select.repo').append($('<option />').val(data.repo).html(data.repo));
+            socket.emit('change-repo',data.repo);
         });
+        
+        $.each(location.hash.split(';'),function(i,r){
+            r && $('select.repo').append($('<option />').val(r).html(r));
+        });
+        $body.on('change','.repo',function(){
+            socket.emit('change-repo',$(this).val());
+        }).on('click','.btn.deploy',function(){
+            $('#console').empty();
+            socket.emit('deploy',{hash: $('.bra').val() , pro:$('.pro').val() });
+        });
+        $('select.repo').val() && socket.emit('change-repo',$('select.repo').val());
+        if( /\/commit\//.test(location.href) ){
+            socket.emit('deploy',{hash:location.href.split('/').pop()});
+            socket.emit('repo');   
+        }
+        
     </script>
 </body>
 </html>
