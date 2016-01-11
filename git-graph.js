@@ -276,6 +276,13 @@ var Gitter = function(repo){
 			}
 		},cb);
 	};
+    
+    this.run = function( cmd , params , cb ){
+        var pro = run(cmd,params,function(){});
+        pro.stdout.on("data",cb);
+        pro.stderr.on("data",cb);
+        return pro;
+    };
 };
 
 module.exports = Gitter;

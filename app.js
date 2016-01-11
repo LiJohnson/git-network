@@ -91,6 +91,14 @@ io.on("connection",function(socket){
         git.branch( function(arr){
             socket.emit('change-repo',arr);
         });
+    }).on('tail-log',function(project){
+        var map = {
+            PC:'/data2/projects/ycp/tomcat3/logs/catalina.out',
+            APP:'/data2/projects/app/tomcat3/logs/catalina.out'
+        };
+        map[project] && git.run('tail',['-f',map[project]],function(data){
+            socket.emit('tail-log',data);
+        })
     });
 });
 

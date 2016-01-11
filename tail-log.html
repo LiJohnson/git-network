@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>tail-log</title>
+    <link href="//cdn.bootcss.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+   <div class="form-inline" >
+    <select class="btn btn-info form-control" >
+        <option>---</option>
+        <option value="APP" >APP</option>
+        <option value="PC" >PC</option>
+    </select> 
+   </div>
+   
+   <pre id="console" ></pre>
+   <script src="/frameworks.js" ></script>
+   <script src="/socket.io/socket.io.js"></script>
+   <script>
+       var socket = io();
+       var $console = $('#console') , $body = $('body');
+       $('select').change(function(){
+           socket.emit('tail-log',$(this).val());
+           $console.empty();
+       });
+       
+       socket.on('tail-log',function(html){
+            html = String.fromCharCode.apply(null, new Uint8Array(html));
+            $console.append(html);
+            $body.scrollTop($body.outerHeight());
+       });
+       
+   </script>
+</body>
+</html>
