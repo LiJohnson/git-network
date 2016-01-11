@@ -3,14 +3,13 @@
     <meta charset="UTF-8" />
     <title>deploy</title>
     <link href="//cdn.bootcss.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" rel="stylesheet">
-
-
 </head>
 <body>
     <div class="row" >
         <select class="btn btn-default repo" ></select>
         <select class="btn btn-info bra" ></select>
         <a class="btn btn-info deploy" >deploy</a>
+        <a href="/" >graph</a>
     </div>
     <pre id="console" ></pre>
 	<script src="/frameworks.js" ></script>
@@ -35,7 +34,7 @@
             socket.emit('change-repo',data.repo);
         });
         
-        $.each(location.hash.split(';'),function(i,r){
+        $.each(location.hash.replace('#','').split(';'),function(i,r){
             r && $('select.repo').append($('<option />').val(r).html(r));
         });
         $body.on('change','.repo',function(){
