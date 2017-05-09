@@ -1,18 +1,18 @@
-#git-network
+# git-network
 
 > git log graph overview (a copy from [github-network
 ](http://lcs.com))
 
-** node.js is recommended **
+**node.js is recommended**
 
-##install
+## install
 ```bash
 $ git clone res git-network
 $ cd git-network
 $ npm install
 ```
 
-##usage
+## usage
 
 ```bash
 $ node app.js
